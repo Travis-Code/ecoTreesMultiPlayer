@@ -23,13 +23,15 @@
  -->
  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-
 </head>
 
 	<body style="background: #333;">
 		<div id="gameDiv" class="container">
-				<div class="hangout">Tree Chat
+				<div class="hangout">Car Emissions! CHAT
 				</div>
+				<div id ="amountHeldTest"></div>
+				<div id ="totalGramsCarbonEthanol"></div>
+
 	 			<div id="canvasContainer">
 	 				<!-- TOUCH BUTTON CONTAINER -->
 		 			<div class="buttonContainer">
@@ -93,6 +95,7 @@
 	var chatText = document.getElementById('chat-text');
 	var chatInput = document.getElementById('chat-input');
 	var chatForm = document.getElementById('chat-form');
+	var amountHeldtest = document.getElementById('hangout');
 	var username;
 	var ctx = document.getElementById("ctx").getContext("2d");
 	var canvasWidth = ctx.canvas.width;
@@ -103,10 +106,13 @@
 	var spaceBackground = new Image();
 	var scrollVal = 0;
 	var speed = 6;
+	var amountHeld = 0;
+
+
 
 
 	//ASSETS------------------------------------------------
-	playerSprite.src = "/client/img/tree.png";
+	playerSprite.src = "/client/img/stationWagon.png";
 	spaceBackground.src = "/client/img/desert.png";
 
 	//GAME--------------------------------------------------
@@ -129,6 +135,7 @@
 	var chatText = document.getElementById('chat-text');
 	var chatInput = document.getElementById('chat-input');
 	var chatForm = document.getElementById('chat-form');
+
 
 
 	signDivUsername.addEventListener("keyup", function(event) {
@@ -158,7 +165,7 @@
 	//CHAT--------------------------------------------------
 	socket.on('addToChat', function(data){
 		chatText.innerHTML += '<div>' + data + '</div>';
-		chatText.blur()
+		chatText.blur();
 	});
 	chatForm.onsubmit = function(e){
 		e.preventDefault();
@@ -174,20 +181,29 @@
 
 	//CONTROLS------------------------------------------------
 	document.onkeydown = function(event){
-		if(event.keyCode === 68 || event.keyCode === 39)	//d
+		if(event.keyCode === 68 || event.keyCode === 39){	//d
 			socket.emit('keyPress',{inputId:'right',state:true});
+			amountHeld++;
+		}
+		if(amountHeld==100){
+			amountHeld = 0;
+		}
+
 		else if(event.keyCode === 83 || event.keyCode === 40 )	//s
 			socket.emit('keyPress',{inputId:'down',state:true});
-		else if(event.keyCode === 65 || event.keyCode === 37) //a
+		else if(event.keyCode === 65 || event.keyCode === 37){ //a
 			socket.emit('keyPress',{inputId:'left',state:true});
+			amountHeld++;
+		}
 		else if(event.keyCode === 87 || event.keyCode === 38) // w
 			socket.emit('keyPress',{inputId:'up',state:true});		
 	}
 
 
 	document.onkeyup = function(event){
-		if(event.keyCode === 68 || event.keyCode === 39)	//d
+		if(event.keyCode === 68 || event.keyCode === 39){//d
 			socket.emit('keyPress',{inputId:'right',state:false});
+		}
 		else if(event.keyCode === 83 || event.keyCode === 40)	//s
 			socket.emit('keyPress',{inputId:'down',state:false});
 		else if(event.keyCode === 65 || event.keyCode === 37) //a
@@ -208,6 +224,7 @@
 				socket.emit("topWallCollision", {hitTopWall:true});
 			else if(data[i].y >= canvasHeight+50)
 				socket.emit("bottomWallCollision", {hitBottomWall:true});
+
 		}
 	}
 
@@ -226,14 +243,48 @@
 		renderBackground();                
 	}
 
+	setInterval (function(){ 
+		  var userValues = amountHeld;
+		  var otherUserValues = 25;
+		  var litersPerGallon = 3.78541/1;
+		  var miliPerLiter = 1000/1;
+		  var octanePercentage = 9/10;
+		  var ethanolPercentage = 1/10;
+		  var densityOfOctane = .702;
+		  var gramsOfOctane;
+		  var treeConsumptionDay = .13;
+		  var treeConsumptionMonthly = 4;
+		  var densityOfEthanol = .7892;
+		  var carbonEthanol = 88.018/46.0688;
+		  var carbonOctane = 704.144/228.462;
+		  var oneKiloGram = 1000;
+		  var onePound = 2.0246;
+		  var totalGramsCarbonEthanol = userValues * (1/otherUserValues) * litersPerGallon * miliPerLiter * 
+		    ethanolPercentage * densityOfEthanol ;
+		  var totalGramsCarbonOctane = userValues * (1/otherUserValues) * litersPerGallon * miliPerLiter * 
+		  octanePercentage * densityOfOctane ; 
+		  var emissionEthanol = totalGramsCarbonEthanol * carbonEthanol ;
+		  var emissionOctane = totalGramsCarbonOctane * carbonOctane;
+		  var emissionTotal = emissionEthanol + emissionOctane;
+		  var emissionPounds = emissionTotal /oneKiloGram / onePound;
+		  var yourTreeAteOneDay = emissionPounds / treeConsumptionDay;
+		  var yourTreeAteMonth = emissionPounds/ treeConsumptionMonthly;
+
+		document.getElementById("totalGramsCarbonEthanol").innerHTML = "CO2 Emissions in lbs " + emissionPounds;
+
+		console.log(yourTreeAteOneDay);
+	},1000,amountHeld);
+
 	function renderBackground(){
+		document.getElementById("amountHeldTest").innerHTML = "Distance Traveled in Miles " + amountHeld;
+
 		// if(scrollVal >= canvasWidth){
-		// 	//console.log(scrollVal);
+		// console.log(amountHeld);
 		// 	scrollVal = 0;
 		// }
-		// scrollVal+=speed;				
+		scrollVal+=speed;				
 		// ctx.drawImage(spaceBackground, -scrollVal, 0, backgroundImgWidth, backgroundImgHeight);
-  //    	ctx.drawImage(spaceBackground, canvasWidth-scrollVal, 0, backgroundImgWidth, backgroundImgHeight);
+  		// ctx.drawImage(spaceBackground, canvasWidth-scrollVal, 0, backgroundImgWidth, backgroundImgHeight);
   		ctx.drawImage(spaceBackground, 0, 0, backgroundImgWidth, backgroundImgHeight);
      	ctx.drawImage(spaceBackground, 0, 0, backgroundImgWidth, backgroundImgHeight);
 	}

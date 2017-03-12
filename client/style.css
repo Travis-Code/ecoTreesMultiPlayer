@@ -2,6 +2,14 @@ body{
 	background: #333;
 }
 
+#amountHeldTest{
+    color: white;
+} 
+
+#totalGramsCarbonEthanol{
+    color: white;
+} 
+
 #buttonContainer{
 }
 

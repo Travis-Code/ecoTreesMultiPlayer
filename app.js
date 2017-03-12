@@ -18,9 +18,6 @@ var Player_Names = {};
 var numberOfUsers =0;
 var collision = false;
 
-
-// var Entity = 
-
 //PLAYER OBJECT-----------------------------------------------------
 var Player = function(id){
 	var self = {
@@ -33,7 +30,7 @@ var Player = function(id){
 		pressingLeft:false,
 		pressingUp:false,
 		pressingDown:false,
-		maxSpd:10,
+		maxSpd:2,
 		username:"",
 		hitWall: false,
 		hitRightWall:true,
@@ -138,7 +135,6 @@ setInterval(function(){
 		var player = PLAYER_LIST[i];
 		player.collideWithWalls();
 		player.updatePosition();
-
 		pack.push({
 			x:player.x,
 			y:player.y,
@@ -148,11 +144,9 @@ setInterval(function(){
 	var namePack = [];
 	for(var i in SOCKET_LIST){
 		var socket = SOCKET_LIST[i];
-
 		namePack.push({
 			username:""+ socket.username,
 		});
-
 		socket.emit("newPosition",pack);
 	}
 
